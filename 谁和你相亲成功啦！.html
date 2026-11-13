@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>哪个男/女主角和你相亲成功啦</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%239C5660' d='M12 21s-7.5-4.6-9.7-9C.7 8.6 2.3 5 5.6 5c2 0 3.4 1.1 4.4 2.6L12 9.6l2-2C15 6.1 16.4 5 18.4 5c3.3 0 4.9 3.6 3.3 7-2.2 4.4-9.7 9-9.7 9z'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#F6F3EE; --card:#FFFFFF; --ink:#23211F; --sub:#6B655E;
+  --line:#E7E1D8; --accent:#9C5660;
+  --hot:#B7576B; --safe:#5E9B7E; --fun:#D99A3D; --alone:#5B76B8;
+  --radius:18px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",sans-serif;
+  line-height:1.6; font-size:15px;
+}
+.wrap{max-width:480px;margin:0 auto;min-height:100dvh;padding:24px 20px 40px;display:flex;flex-direction:column}
+.serif{font-family:"Noto Serif SC","Songti SC","STSong",serif}
+.view{display:none;flex-direction:column;flex:1;animation:fade .35s ease}
+.view.active{display:flex}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* 首页 */
+.hero{flex:1;display:flex;flex-direction:column;justify-content:center;gap:18px;padding:10px 0}
+.eyebrow{font-size:13px;letter-spacing:.18em;color:var(--sub)}
+h1.title{font-size:30px;line-height:1.35;font-weight:700;letter-spacing:.02em}
+h1.title em{font-style:normal;color:var(--accent)}
+.lead{color:var(--sub);font-size:15px}
+.choice-label{font-size:13px;color:var(--sub);margin-top:8px}
+.choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+.choice-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 16px;cursor:pointer;text-align:center;transition:border-color .2s,transform .2s}
+.choice-card .big{font-size:17px;font-weight:600;margin-bottom:4px}
+.choice-card .small{font-size:12.5px;color:var(--sub)}
+.choice-card.sel{border-color:var(--accent);background:#FBF3F4}
+.btn{display:block;width:100%;border:none;border-radius:14px;background:var(--accent);color:#fff;font-size:16px;font-weight:600;padding:15px 18px;cursor:pointer;letter-spacing:.05em}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.hint{font-size:12.5px;color:var(--sub);text-align:center}
+
+/* 答题 */
+.quiz-top{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--sub);margin-bottom:14px}
+.progress{height:6px;background:var(--line);border-radius:99px;overflow:hidden;margin-bottom:26px}
+.progress i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .3s ease}
+.q-text{font-size:20px;font-weight:600;line-height:1.5;margin-bottom:24px}
+.opts{display:flex;flex-direction:column;gap:12px}
+.opt{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 16px;cursor:pointer;display:flex;gap:12px;align-items:flex-start;transition:border-color .2s,background .2s}
+.opt .key{flex:0 0 26px;height:26px;border:1px solid var(--line);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--sub)}
+.opt .ot{font-size:15px}
+.opt.sel{border-color:var(--accent);background:#FBF3F4}
+.opt.sel .key{background:var(--accent);color:#fff;border-color:var(--accent)}
+.quiz-foot{margin-top:24px;display:flex;gap:12px}
+.quiz-foot .btn{flex:1}
+
+/* 加载 */
+.loading{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center}
+.loading .ring{width:44px;height:44px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* 结果 */
+.result-head{text-align:center;margin:6px 0 20px}
+.result-head .tag{display:inline-block;font-size:12.5px;color:var(--accent);border:1px solid var(--accent);border-radius:99px;padding:4px 12px;margin-bottom:12px}
+.type-name{font-size:24px;font-weight:700}
+.type-desc{color:var(--sub);font-size:14px;margin-top:8px}
+.bars{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:18px}
+.bar-row{display:grid;grid-template-columns:72px 1fr 34px;align-items:center;gap:10px;padding:7px 0}
+.bar-row .bn{font-size:13px}
+.bar-track{height:8px;background:var(--line);border-radius:99px;overflow:hidden}
+.bar-track i{display:block;height:100%;border-radius:99px}
+.bar-row .bv{font-size:12px;color:var(--sub);text-align:right}
+.match-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px 18px;text-align:center;margin-bottom:18px}
+.match-card .role{font-size:26px;font-weight:700;margin:8px 0 4px}
+.match-card .drama{font-size:13px;color:var(--sub)}
+.match-card .fit{display:inline-block;margin-top:10px;font-size:14px;color:var(--accent);font-weight:600}
+.match-card .rtag{margin-top:12px;font-size:14px;color:var(--ink);background:var(--bg);border-radius:12px;padding:12px 14px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px}
+.panel h3{font-size:14px;margin-bottom:8px}
+.panel p{font-size:14px;color:var(--sub)}
+.foot-btns{display:flex;flex-direction:column;gap:12px;margin-top:8px}
+.disclaimer{font-size:11.5px;color:var(--sub);text-align:center;margin-top:20px;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 首页 -->
+  <section class="view active" id="view-home">
+    <div class="hero">
+      <div class="eyebrow">FUN MATCHING QUIZ</div>
+      <h1 class="title serif">哪个男/女主角<br>和你<em>相亲成功啦</em></h1>
+      <p class="lead">24 道相处情境题，从相识、表白、热恋到婚后日常，看清你的恋爱偏好，匹配最契合你的影视灵魂恋人。</p>
+      <div class="choice-label">你想测哪一类灵魂恋人？</div>
+      <div class="choice-grid" id="gender-grid">
+        <div class="choice-card" data-gender="male">
+          <div class="big serif">男主角</div>
+          <div class="small">最适配你的他</div>
+        </div>
+        <div class="choice-card" data-gender="female">
+          <div class="big serif">女主角</div>
+          <div class="small">最适配的她</div>
+        </div>
+      </div>
+    </div>
+    <button class="btn" id="btn-start" disabled>开启缘分测算</button>
+    <p class="hint">答题无对错，凭第一直觉选择即可</p>
+  </section>
+
+  <!-- 答题 -->
+  <section class="view" id="view-quiz">
+    <div class="quiz-top">
+      <span id="q-index">1 / 24</span>
+      <span id="q-progress-text">0%</span>
+    </div>
+    <div class="progress"><i id="q-bar" style="width:0%"></i></div>
+    <div class="q-text serif" id="q-text"></div>
+    <div class="opts" id="q-opts"></div>
+    <div class="quiz-foot">
+      <button class="btn ghost" id="btn-back">上一题</button>
+    </div>
+  </section>
+
+  <!-- 加载 -->
+  <section class="view" id="view-loading">
+    <div class="loading">
+      <div class="ring"></div>
+      <div>正在解析你的恋爱偏好，匹配灵魂恋人……</div>
+    </div>
+  </section>
+
+  <!-- 结果 -->
+  <section class="view" id="view-result">
+    <div class="result-head">
+      <span class="tag">测算完成</span>
+      <div class="type-name serif" id="r-type-name"></div>
+      <div class="type-desc" id="r-type-desc"></div>
+    </div>
+
+    <div class="bars" id="r-bars"></div>
+
+    <div class="match-card">
+      <div class="eyebrow">命中灵魂恋人</div>
+      <div class="role serif" id="r-role"></div>
+      <div class="drama" id="r-drama"></div>
+      <div class="fit" id="r-fit"></div>
+      <div class="rtag" id="r-tag"></div>
+    </div>
+
+    <div class="panel">
+      <h3>你们的相处日常</h3>
+      <p id="r-daily"></p>
+    </div>
+    <div class="panel">
+      <h3>婚后生活图景</h3>
+      <p id="r-marriage"></p>
+    </div>
+    <div class="panel">
+      <h3>感情小提醒</h3>
+      <p id="r-remind"></p>
+    </div>
+
+    <div class="foot-btns">
+      <button class="btn" id="btn-share">复制我的结果</button>
+      <button class="btn ghost" id="btn-retry">重新测评</button>
+    </div>
+    <p class="disclaimer">本测评仅供趣味娱乐，人物均为影视剧虚构角色，与演员本人无关，不存在任何代言合作；结果不代表真实感情预测。</p>
+  </section>
+
+</div>
+
+<script>
+/* ===== 类型元数据 ===== */
+var TYPES = {
+  hot:{name:"热烈奔赴型",color:"var(--hot)",
+    desc:"你骨子里向往毫无保留的偏爱，期待直白的爱意与满满的仪式感；你不怕轰轰烈烈，最怕感情冷淡无声。",
+    daily:"你们的相处从不缺少表达与惊喜，情绪来得直接，偏爱也摆在明面上，两个人都愿意主动奔向对方。",
+    marriage:"一辈子保留浪漫与心动，大大小小的纪念都被认真对待，走到多年以后依旧会直白地说出爱意。",
+    remind:"你很需要被回应，若对方习惯沉默藏话，会让你极度没有安全感；记得把需求直接说出口。"},
+  safe:{name:"安稳细流型",color:"var(--safe)",
+    desc:"你想要的不是惊天动地的浪漫，而是踏实靠谱的长久归宿；比起甜言蜜语，你更看重责任、担当与长久守护。",
+    daily:"遇事有商有量，行动多于情话。对方记得你的习惯，把生活安排妥当，相处平稳安心，不慌不乱。",
+    marriage:"柴米油盐都被打理得井井有条，家务与未来共同规划，平平淡淡却格外踏实，相守到老。",
+    remind:"你最受不了随性散漫、没有担当的伴侣；也记得多问问对方的疲惫，别让他一个人扛下所有压力。"},
+  fun:{name:"趣味自在型",color:"var(--fun)",
+    desc:"对你来说感情最重要的是相处不累。你讨厌压抑死板与条条框框，希望两个人打打闹闹，一辈子轻松快乐。",
+    daily:"在一起永远有说有笑，不拘小节，想到什么就去玩什么，烦恼三言两语就能被逗散。",
+    marriage:"家里常备欢声笑语，不被规矩捆住，一家人怎么开心怎么来，自由又热闹地过一辈子。",
+    remind:"你受不了紧绷压抑、事事较真的关系；但对方偶尔安静下来时，也记得主动问问他是不是藏了心事。"},
+  alone:{name:"独立清醒型",color:"var(--alone)",
+    desc:"再好的爱情也不能丢掉自我。你追求平等尊重的相爱，彼此留有空间，各自发光，互相成全。",
+    daily:"两个人既是爱人也是搭档，各自有自己的圈子与追求，有事一起商量，无事各自安好，相处舒服不捆绑。",
+    marriage:"家庭责任共同分担，也保留各自的小世界；互相扶持、彼此成全，独立又相爱地走很长的路。",
+    remind:"你很需要私人边界，受不了占有欲过强的捆绑；也请偶尔放下克制，让对方看见你柔软的一面。"}
+};
+var TYPE_ORDER=["hot","safe","fun","alone"];
+
+/* ===== 24 题（A=hot B=safe C=fun D=alone） ===== */
+var QUESTIONS=[
+ {t:"偶然相遇，你最心动的开场是哪一种？",o:[
+  ["对方大胆过来搭话，眼睛亮晶晶，直白地夸你好看，一点都不害羞","hot"],
+  ["安静腼腆，小心翼翼打招呼，说话温柔有礼貌，稳稳当当","safe"],
+  ["一开口就很搞笑，一个玩笑把你逗笑，场面瞬间轻松","fun"],
+  ["淡淡地点头示意，不刻意靠近，从容克制，不讨好","alone"]]},
+ {t:"刚加上联系方式，你更期待对方怎么开启聊天？",o:[
+  ["从早到晚报备所有小事，源源不断分享日常","hot"],
+  ["固定时间问好，慢慢聊天，循序渐进不急不躁","safe"],
+  ["想到就来找你，随手发搞笑视频和表情包","fun"],
+  ["有事才聊，不强行找话题，不打扰私人时间","alone"]]},
+ {t:"第一次约你出门，你更偏向哪一种邀约？",o:[
+  ["直接说今天全部安排好，你只管过来就好","hot"],
+  ["提前好几天问你时间、想吃什么，顺着你心意安排","safe"],
+  ["随口喊你出去逛逛，走到哪算哪，没有计划","fun"],
+  ["提前商量时间地点，各自出行，互不麻烦","alone"]]},
+ {t:"第一次见面快分开时，你最期待哪个小细节？",o:[
+  ["舍不得走，直接抱住你，直白说舍不得你","hot"],
+  ["一直等你平安到家报平安，才安心休息","safe"],
+  ["打打闹闹约好下次再出来玩，开心告别","fun"],
+  ["礼貌道别，各自回家，不过度亲密，有分寸","alone"]]},
+ {t:"暧昧阶段，哪个小动作最戳你？",o:[
+  ["走路直接牵住你的手，十指紧扣不放","hot"],
+  ["记得你不爱吃什么、怕冷，默默照顾你","safe"],
+  ["故意逗你、捏一下脸，打打闹闹逗你脸红","fun"],
+  ["尊重距离，经过你同意后才靠近","alone"]]},
+ {t:"暧昧期对方一段时间没回消息，你第一反应是？",o:[
+  ["是不是不在乎我，心里难受，疯狂胡思乱想","hot"],
+  ["应该在忙，安静等着，等他有空再解释","safe"],
+  ["无所谓，我自己玩我的，等他回来分享趣事","fun"],
+  ["每个人都有自己的事，不会追着问为什么","alone"]]},
+ {t:"晚上散步吹晚风，你最期待的画面是？",o:[
+  ["路灯下盯着你的眼睛，深情诉说有多喜欢","hot"],
+  ["安静陪着，话不多，一直走在身边护着你","safe"],
+  ["边走边追逐说笑，一路都是笑声","fun"],
+  ["并排看风景，不用刻意找话题，自在舒服","alone"]]},
+ {t:"告白那一刻，你最想要的场景是？",o:[
+  ["朋友围着起哄，鲜花气球，当众大声表白","hot"],
+  ["只有你们两人，安安静静说出心里话，真诚稳重","safe"],
+  ["没有正式仪式，打闹间随口一句：要不在一起吧","fun"],
+  ["坐下来好好聊，互相确认心意，理性确定关系","alone"]]},
+ {t:"在一起后的周末，你更喜欢哪种安排？",o:[
+  ["从早到晚黏在一起，一刻都不想分开","hot"],
+  ["提前规划吃饭逛街看电影，节奏稳稳当当","safe"],
+  ["睡到自然醒，想到去哪去哪，怎么开心怎么来","fun"],
+  ["一半时间一起，一半时间留给出独处","alone"]]},
+ {t:"第一次小争吵，你希望怎么处理？",o:[
+  ["不许冷战，当下立刻哄好，不带情绪过夜","hot"],
+  ["都冷静下来，坐下来讲道理，一起解决问题","safe"],
+  ["过会儿开个玩笑化解，吵归吵别搞得沉重","fun"],
+  ["各自分开冷静，平复后再沟通，互不强迫","alone"]]},
+ {t:"过节送礼，你心中最理想的样子是？",o:[
+  ["鲜花、礼物、大餐，仪式感必须拉满，不能敷衍","hot"],
+  ["不贵但用心观察后挑的，实用贴心适合日常","safe"],
+  ["不用贵重，一起吃顿好的或互送搞笑小礼物","fun"],
+  ["想要可以直接说，不用对方猜，没有硬性要求","alone"]]},
+ {t:"恋爱里手机这件事，你更认同哪种细节？",o:[
+  ["彼此手机随便看，爱就是毫无保留全部透明","hot"],
+  ["知道密码，想看随时问，坦荡安心不隐瞒","safe"],
+  ["看不看无所谓，谁想看就看，怎么舒服怎么来","fun"],
+  ["各自有隐私，不主动翻看对方手机，尊重空间","alone"]]},
+ {t:"如果要求婚，你最期待哪种现场？",o:[
+  ["盛大浪漫，铺满鲜花，亲友到场，单膝跪地","hot"],
+  ["只有你们两人，安静拿出戒指认真求婚","safe"],
+  ["出去玩时突然掏出戒指，开开心心随口求婚","fun"],
+  ["两人商量好结婚计划，顺理成章求婚，不玩套路","alone"]]},
+ {t:"你的梦幻婚礼，最想要哪种场面？",o:[
+  ["盛大豪华，宾客众多，长纱花瓣，全场焦点","hot"],
+  ["温馨小型婚礼，至亲好友，简单温暖，庄重走心","safe"],
+  ["干脆旅行结婚，两人到处玩，拍照留念就好","fun"],
+  ["简约领证仪式，不铺张，低调简单","alone"]]},
+ {t:"婚礼接亲环节，你更喜欢哪种感觉？",o:[
+  ["热热闹闹，堵门游戏起哄，喜庆氛围拉满","hot"],
+  ["流程顺顺利利，不搞闹婚，安静体面稳重","safe"],
+  ["小游戏随便闹，怎么快乐怎么来","fun"],
+  ["不喜欢闹腾，流程简单快速，安静顺利结束","alone"]]},
+ {t:"新婚第一晚送走宾客，你最期待的画面？",o:[
+  ["抱着彼此不停诉说爱意，回味今天的浪漫甜蜜","hot"],
+  ["一起清点礼物，商量新家大小安排，踏实规划未来","safe"],
+  ["累瘫在床上打打闹闹，吃点小吃轻松放松","fun"],
+  ["各自洗漱休息，安静陪伴，互不打扰","alone"]]},
+ {t:"住进同一个家，家务分工你最接受哪种模式？",o:[
+  ["尽量一起做，扫地做饭洗碗都黏在一起","hot"],
+  ["固定分工，谁做饭谁拖地谁洗碗，井井有条","safe"],
+  ["谁有空谁做，懒得做就放着，不用较真","fun"],
+  ["自己管好自己那部分，互不拖累互相尊重","alone"]]},
+ {t:"婚后管钱，你更偏向哪种理财方式？",o:[
+  ["所有钱放共同账户，不分你我，随便一起花","hot"],
+  ["设共同家用账户，每月固定存钱，剩下各自保管","safe"],
+  ["没有硬规矩，缺钱互相拿，不算太清楚","fun"],
+  ["财产独立，各自管收入，家用平摊，账目清晰","alone"]]},
+ {t:"下班晚上在家，你最喜欢哪种相处画面？",o:[
+  ["时刻黏在一起，窝沙发追剧互相靠着","hot"],
+  ["收拾完屋子坐下来，聊聊今天发生的事，安稳谈心","safe"],
+  ["各自想干嘛干嘛，一会凑一起玩，一会分开","fun"],
+  ["各有独立空间，他忙他的你忙你的，有空再陪","alone"]]},
+ {t:"婚后因琐事闹矛盾，你希望怎么处理？",o:[
+  ["不能冷战，当天晚上抱一抱和好","hot"],
+  ["一件件商量，一起找到办法，避免再吵","safe"],
+  ["吵完笑一笑翻篇，不揪着小事纠结","fun"],
+  ["很累就分开独处一会，平复后再沟通","alone"]]},
+ {t:"刚出生那段时间照顾宝宝，你期待哪种陪伴？",o:[
+  ["全程一起围着宝宝转，一起熬夜喂奶，形影不离","hot"],
+  ["提前分工轮班，照顾孩子井井有条","safe"],
+  ["怎么省事怎么来，有空陪玩累了就偷懒","fun"],
+  ["谁精力足谁多照顾，不强迫时刻守在身边","alone"]]},
+ {t:"孩子慢慢长大，教育抚养你更偏向哪种细节？",o:[
+  ["全家满满是爱，常出游陪伴，热烈又幸福","hot"],
+  ["重视习惯与责任，规划学习生活，稳稳长大","safe"],
+  ["孩子开心最重要，少些条条框框，自由自在","fun"],
+  ["尊重孩子独立想法，不过度管控，尊重选择","alone"]]},
+ {t:"孩子离家后，退休晚年你想象中的画面是？",o:[
+  ["天天黏在一起到处游玩，像热恋一样充满爱意","hot"],
+  ["在家买菜做饭散步遛弯，平淡相守一辈子","safe"],
+  ["到处旅游结交新朋友，随心所欲不受束缚","fun"],
+  ["一起生活但各有爱好圈子，互不捆绑自在舒服","alone"]]},
+ {t:"回顾这一生感情，你最向往的结局是？",o:[
+  ["一辈子轰轰烈烈，爱意永远滚烫热烈","hot"],
+  ["不离不弃互相扶持，安稳相守到老","safe"],
+  ["轻松快乐，吵吵闹闹，这一生开心无憾","fun"],
+  ["彼此成全各自发光，独立又相爱，舒服长久","alone"]]}
+];
+
+/* ===== 角色池：每类型 6 位 ===== */
+var ROLES={
+ male:[
+  {name:"李峋",drama:"点燃我，温暖你",type:"hot",w:{hot:90,safe:30,fun:40,alone:60},tag:"桀骜少年，外冷内热，偏爱只给你一人。"},
+  {name:"东方青苍",drama:"苍兰诀",type:"hot",w:{hot:98,safe:40,fun:25,alone:50},tag:"霸气强势，高调护短，热烈直球地沦陷。"},
+  {name:"韩烁",drama:"传闻中的陈芊芊",type:"hot",w:{hot:95,safe:35,fun:70,alone:20},tag:"腹黑黏人，满眼是你，又撩又忠。"},
+  {name:"何以琛",drama:"何以笙箫默",type:"hot",w:{hot:85,safe:80,fun:15,alone:45},tag:"执着深情，多年等待，认定了就不将就。"},
+  {name:"凌不疑",drama:"星汉灿烂",type:"hot",w:{hot:80,safe:70,fun:20,alone:70},tag:"隐忍热烈，沉稳护妻，偏爱藏在行动里。"},
+  {name:"肖奈",drama:"微微一笑很倾城",type:"hot",w:{hot:70,safe:60,fun:30,alone:75},tag:"清冷大神，专一笃定，默默把一切安排好。"},
+
+  {name:"顾魏",drama:"余生，请多指教",type:"safe",w:{hot:35,safe:95,fun:30,alone:40},tag:"成熟医生，温柔稳重，遇事有担当。"},
+  {name:"周生辰",drama:"周生如故",type:"safe",w:{hot:40,safe:98,fun:25,alone:45},tag:"温润如玉，儒雅专一，浪漫藏在细节里。"},
+  {name:"陆绎",drama:"锦衣之下",type:"safe",w:{hot:65,safe:90,fun:35,alone:70},tag:"冷面护妻，嘴硬心软，做事有交代。"},
+  {name:"凌霄",drama:"以家人之名",type:"safe",w:{hot:50,safe:88,fun:30,alone:65},tag:"细腻隐忍，默默守护，长久陪伴。"},
+  {name:"江辰",drama:"致我们单纯的小美好",type:"safe",w:{hot:55,safe:80,fun:45,alone:55},tag:"傲娇学霸，嘴硬心软，悄悄宠溺你。"},
+  {name:"陈屿",drama:"三十而已",type:"safe",w:{hot:25,safe:75,fun:20,alone:85},tag:"慢热务实，踏实顾家，爱藏在日常里。"},
+
+  {name:"谢允",drama:"有翡",type:"fun",w:{hot:60,safe:30,fun:95,alone:50},tag:"风趣通透，嘴甜会哄，自带松弛感。"},
+  {name:"魏无羡",drama:"陈情令",type:"fun",w:{hot:85,safe:25,fun:90,alone:55},tag:"明媚洒脱，热血仗义，鲜活有趣。"},
+  {name:"段嘉许",drama:"偷偷藏不住",type:"fun",w:{hot:75,safe:65,fun:92,alone:30},tag:"温柔会撩，痞帅松弛，包容你的小任性。"},
+  {name:"余淮",drama:"最好的我们",type:"fun",w:{hot:80,safe:50,fun:85,alone:40},tag:"阳光校草，青涩元气，少年气满满。"},
+  {name:"张万森",drama:"一闪一闪亮星星",type:"fun",w:{hot:65,safe:60,fun:80,alone:55},tag:"温柔少年，默默守护，干净真诚。"},
+  {name:"林杨",drama:"你好，旧时光",type:"fun",w:{hot:70,safe:55,fun:88,alone:30},tag:"阳光开朗，热血真诚，治愈系少年。"},
+
+  {name:"蓝忘机",drama:"陈情令",type:"alone",w:{hot:20,safe:60,fun:10,alone:95},tag:"清冷克制，边界感强，深情专一。"},
+  {name:"盛淮南",drama:"暗恋橘生淮南",type:"alone",w:{hot:30,safe:55,fun:35,alone:90},tag:"清冷学霸，理智通透，势均力敌。"},
+  {name:"于途",drama:"你是我的荣耀",type:"alone",w:{hot:35,safe:60,fun:30,alone:92},tag:"理性沉稳，独立清醒，互相成全。"},
+  {name:"江直树",drama:"恶作剧之吻",type:"alone",w:{hot:25,safe:50,fun:25,alone:88},tag:"高冷学霸，克制内敛，慢热深情。"},
+  {name:"言默",drama:"我只喜欢你",type:"alone",w:{hot:30,safe:65,fun:20,alone:85},tag:"寡言务实，冷静克制，长久笃定。"},
+  {name:"贺涵",drama:"我的前半生",type:"alone",w:{hot:35,safe:65,fun:25,alone:84},tag:"成熟理性，事业独立，分寸感强，互相成全。"}
+ ],
+ female:[
+  {name:"赵默笙",drama:"何以笙箫默",type:"hot",w:{hot:98,safe:50,fun:70,alone:25},tag:"明媚小太阳，热烈直白，主动奔赴喜欢的人。"},
+  {name:"林月如",drama:"仙剑奇侠传",type:"hot",w:{hot:95,safe:30,fun:65,alone:75},tag:"飒爽直率，敢爱敢恨，爱得轰轰烈烈。"},
+  {name:"桑稚",drama:"偷偷藏不住",type:"hot",w:{hot:90,safe:80,fun:35,alone:30},tag:"腼腆执着，温柔专一，默默惦记多年。"},
+  {name:"楚雨荨",drama:"一起来看流星雨",type:"hot",w:{hot:88,safe:45,fun:60,alone:65},tag:"倔强热烈，单纯执着，不轻易放弃。"},
+  {name:"小枫",drama:"东宫",type:"hot",w:{hot:92,safe:35,fun:55,alone:50},tag:"赤诚坦荡，热烈执着，爱得毫无保留。"},
+  {name:"唐雪见",drama:"仙剑奇侠传三",type:"hot",w:{hot:85,safe:40,fun:75,alone:35},tag:"活泼直爽，明媚热烈，小脾气里藏着真心。"},
+
+  {name:"赵灵儿",drama:"仙剑奇侠传",type:"safe",w:{hot:50,safe:98,fun:40,alone:35},tag:"纯净温柔，善良勇敢，让人安心的白月光。"},
+  {name:"小兰花",drama:"苍兰诀",type:"safe",w:{hot:60,safe:97,fun:55,alone:25},tag:"软萌善良，细腻共情，温暖贴心。"},
+  {name:"耿耿",drama:"最好的我们",type:"safe",w:{hot:55,safe:92,fun:60,alone:40},tag:"青涩细腻，真诚温顺，陪伴感很强。"},
+  {name:"邱莹莹",drama:"欢乐颂",type:"safe",w:{hot:70,safe:85,fun:80,alone:20},tag:"单纯真诚，元气顾家，知足常乐。"},
+  {name:"沈佳宜",drama:"那些年，我们一起追的女孩",type:"safe",w:{hot:50,safe:90,fun:45,alone:45},tag:"温柔清纯，安静细腻，少年记忆里的白月光。"},
+  {name:"李尖尖",drama:"以家人之名",type:"safe",w:{hot:60,safe:80,fun:85,alone:35},tag:"爽朗乐观，阳光治愈，相处轻松自在。"},
+
+  {name:"曲筱绡",drama:"欢乐颂",type:"fun",w:{hot:85,safe:20,fun:95,alone:70},tag:"古灵精怪，直球大胆，鬼马俏皮。"},
+  {name:"袁湘琴",drama:"恶作剧之吻",type:"fun",w:{hot:90,safe:55,fun:93,alone:20},tag:"迷糊可爱，乐天直球，元气满满。"},
+  {name:"陈芊芊",drama:"传闻中的陈芊芊",type:"fun",w:{hot:85,safe:30,fun:98,alone:60},tag:"机灵狡黠，脑洞爆棚，活泼大胆。"},
+  {name:"夏淼淼",drama:"初恋那件小事",type:"fun",w:{hot:60,safe:55,fun:88,alone:30},tag:"元气少女，软软萌萌，一步步向阳生长。"},
+  {name:"贝微微",drama:"微微一笑很倾城",type:"fun",w:{hot:70,safe:50,fun:85,alone:55},tag:"飒爽开朗，大方自信，玩得来也靠得住。"},
+  {name:"佟年",drama:"亲爱的，热爱的",type:"fun",w:{hot:80,safe:60,fun:85,alone:25},tag:"软萌直球，热情主动，甜而不腻。"},
+
+  {name:"楚乔",drama:"楚乔传",type:"alone",w:{hot:65,safe:50,fun:35,alone:98},tag:"独立大女主，清醒果敢，并肩同行。"},
+  {name:"甄嬛",drama:"甄嬛传",type:"alone",w:{hot:55,safe:80,fun:40,alone:95},tag:"聪慧通透，从容自持，温柔有格局。"},
+  {name:"安迪",drama:"欢乐颂",type:"alone",w:{hot:30,safe:70,fun:45,alone:92},tag:"理性独立，边界清晰，事业自主。"},
+  {name:"明兰",drama:"知否知否应是绿肥红瘦",type:"alone",w:{hot:40,safe:75,fun:30,alone:90},tag:"清醒通透，隐忍独立，有主见有担当。"},
+  {name:"樊胜美",drama:"欢乐颂",type:"alone",w:{hot:50,safe:65,fun:45,alone:80},tag:"要强通透，成熟现实，内心渴望被偏爱。"},
+  {name:"唐晶",drama:"我的前半生",type:"alone",w:{hot:30,safe:60,fun:35,alone:90},tag:"独立干练，理性克制，感情里不依附。"}
+ ]
+};
+
+/* ===== 状态 ===== */
+var state={gender:null,idx:0,answers:[]};
+
+function $(id){return document.getElementById(id)}
+function show(view){document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));$(view).classList.add("active")}
+
+/* 性别选择 */
+document.querySelectorAll("#gender-grid .choice-card").forEach(c=>{
+  c.addEventListener("click",()=>{
+    document.querySelectorAll("#gender-grid .choice-card").forEach(x=>x.classList.remove("sel"));
+    c.classList.add("sel");
+    state.gender=c.dataset.gender;
+    $("btn-start").disabled=false;
+  });
+});
+
+$("btn-start").addEventListener("click",()=>{
+  if(!state.gender)return;
+  state.idx=0;state.answers=[];
+  renderQuiz();show("view-quiz");
+});
+
+function renderQuiz(){
+  var q=QUESTIONS[state.idx];
+  $("q-index").textContent=(state.idx+1)+" / "+QUESTIONS.length;
+  var pct=Math.round(state.idx/QUESTIONS.length*100);
+  $("q-bar").style.width=pct+"%";$("q-progress-text").textContent=pct+"%";
+  $("q-text").textContent=q.t;
+  var opts=$("q-opts");opts.innerHTML="";
+  var keys=["A","B","C","D"];
+  q.o.forEach(function(o,i){
+    var div=document.createElement("div");
+    div.className="opt"+(state.answers[state.idx]===o[1]?" sel":"");
+    div.innerHTML='<div class="key">'+keys[i]+'</div><div class="ot">'+o[0]+'</div>';
+    div.addEventListener("click",()=>{
+      state.answers[state.idx]=o[1];
+      if(state.idx<QUESTIONS.length-1){state.idx++;renderQuiz();}
+      else{finish();}
+    });
+    opts.appendChild(div);
+  });
+  $("btn-back").style.visibility=state.idx===0?"hidden":"visible";
+}
+
+$("btn-back").addEventListener("click",()=>{
+  if(state.idx>0){state.idx--;renderQuiz();}
+});
+
+function scoreAnswers(){
+  var s={hot:0,safe:0,fun:0,alone:0};
+  state.answers.forEach(a=>{if(a)s[a]++;});
+  return s;
+}
+
+function finish(){
+  show("view-loading");
+  setTimeout(function(){
+    var s=scoreAnswers();
+    var main=TYPE_ORDER.slice().sort((a,b)=>s[b]-s[a])[0];
+    var pool=ROLES[state.gender];
+    var total=QUESTIONS.length;
+    var best=null,bestFit=-1;
+    pool.forEach(r=>{
+      var fit=TYPE_ORDER.reduce((sum,k)=>sum+(s[k]/total)*r.w[k],0);
+      if(r.type===main)fit+=3;
+      if(fit>bestFit){bestFit=fit;best=r;}
+    });
+    renderResult(s,main,best,bestFit);
+    show("view-result");
+  },900);
+}
+
+function fitPercent(fit){
+  var p=Math.round((fit/100)*100);
+  p=Math.max(94,Math.min(99,p));
+  return p+"%";
+}
+
+function renderResult(s,main,role,fit){
+  var t=TYPES[main];
+  $("r-type-name").textContent=t.name;
+  $("r-type-desc").textContent=t.desc;
+
+  var bars=$("r-bars");bars.innerHTML="";
+  TYPE_ORDER.forEach(k=>{
+    var row=document.createElement("div");row.className="bar-row";
+    var pct=Math.round(s[k]/QUESTIONS.length*100);
+    row.innerHTML='<div class="bn">'+TYPES[k].name.slice(0,4)+'</div>'+
+      '<div class="bar-track"><i style="width:'+pct+'%;background:'+TYPES[k].color+'"></i></div>'+
+      '<div class="bv">'+pct+'%</div>';
+    bars.appendChild(row);
+  });
+
+  $("r-role").textContent=role.name;
+  $("r-drama").textContent="出自《"+role.drama+"》";
+  $("r-fit").textContent="契合度 "+fitPercent(fit);
+  $("r-tag").textContent=role.tag;
+  $("r-daily").textContent=t.daily;
+  $("r-marriage").textContent=t.marriage;
+  $("r-remind").textContent=t.remind;
+
+  state.result={type:t.name,role:role.name,drama:role.drama,fit:fitPercent(fit)};
+}
+
+$("btn-share").addEventListener("click",function(){
+  var r=state.result;if(!r)return;
+  var txt="我测出的灵魂恋人是《"+r.drama+"》里的"+r.role+"，契合度"+r.fit+"，属于"+r.type+"。快来测测谁和你相亲成功啦！";
+  function fallback(){
+    var ta=document.createElement("textarea");ta.value=txt;document.body.appendChild(ta);
+    ta.select();try{document.execCommand("copy");alert("结果已复制，去粘贴分享吧");}catch(e){alert("复制失败，请手动截图分享");}
+    document.body.removeChild(ta);
+  }
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(()=>alert("结果已复制，去粘贴分享吧")).catch(fallback);
+  }else{fallback();}
+});
+
+$("btn-retry").addEventListener("click",()=>{
+  state.gender=null;state.idx=0;state.answers=[];state.result=null;
+  document.querySelectorAll("#gender-grid .choice-card").forEach(x=>x.classList.remove("sel"));
+  $("btn-start").disabled=true;
+  show("view-home");
+});
+</script>
+</body>
+</html>
